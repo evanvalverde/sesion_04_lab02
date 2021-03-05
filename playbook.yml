@@ -1,0 +1,50 @@
+---
+- name: 'Laboratorio de variables'
+  hosts: nodos
+  vars_files:
+    'vars/default.yml'
+  vars:
+    grupos:
+      - ctic
+      - devops
+      - everis
+
+  tasks:
+    - name: 'Instala los servicios'
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ servicios }}"
+
+    - name: 'Arranca los servicios'
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop: "{{ servicios }}"
+    
+    - name: 'Crea los grupos'
+      group:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ grupos }}"
+
+    - name: 'Crea los usuarios'
+      user:
+        name: "{{ item.key }}"
+        group: "{{ item.value.grupo }}"
+        generate_ssh_key: "{{ item.value.generar_key }}" 
+        ssh_key_file: "{{ item.value.ruta_key }}" # No todos los usuarios tienen ruta_key
+        uid: "{{ item.value.uid }}" # No todos los usuarios tienen uid
+        expires: "{{ item.value.expira }}"
+      loop: "{{ usuarios|dict2items }}"
+
+    - name: 'Reinicia los servicios'
+      systemd:
+        name: "{{ item }}"
+        state: restarted
+      loop: "{{ servicios }}"
+
+    - name: 'Reinicia los nodos'
+      reboot:
+...
