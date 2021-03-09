@@ -10,11 +10,15 @@
       - everis
 
   tasks:
-    - name: 'Instala los servicios'
+    - name: 'Instala los paquetes correspondientes a los servicios en vars/default.yml'
       yum:
         name: "{{ item }}"
         state: present
-      loop: "{{ servicios }}"
+      loop:
+        - openssh-server
+        - firewalld
+        - httpd
+        - mariadb-server
 
     - name: 'Arranca los servicios'
       systemd:
@@ -29,15 +33,36 @@
         state: present
       loop: "{{ grupos }}"
 
-    - name: 'Crea los usuarios'
+    - name: 'Crea el usuario administrador'
+      vars:
+        usuario: "administrador"
       user:
-        name: "{{ item.key }}"
-        group: "{{ item.value.grupo }}"
-        generate_ssh_key: "{{ item.value.generar_key }}" 
-        ssh_key_file: "{{ item.value.ruta_key }}" # No todos los usuarios tienen ruta_key
-        uid: "{{ item.value.uid }}" # No todos los usuarios tienen uid
-        expires: "{{ item.value.expira }}"
-      loop: "{{ usuarios|dict2items }}"
+        name: '{{ usuario }}'
+        group: '{{ usuarios[usuario]["grupo"] }}'
+        generate_ssh_key: '{{ usuarios[usuario]["generar_key"] }}'
+        ssh_key_file: '{{ usuarios[usuario]["ruta_key"] }}'
+        expires: '{{ usuarios[usuario]["expira"] }}'
+
+    - name: 'Crea el usuario everis_pruebas'
+      vars:
+        usuario: "everis_pruebas"
+      user:
+        name: '{{ usuario }}'
+        group: '{{ usuarios[usuario]["grupo"] }}'
+        generate_ssh_key: '{{ usuarios[usuario]["generar_key"] }}'
+        uid: '{{ usuarios[usuario]["uid"] }}' 
+        expires: '{{ usuarios[usuario]["expira"] }}'
+
+    - name: 'Crea el usuario nuestro'
+      vars:
+        usuario: "nuestro"
+      user:
+        name: '{{ usuario }}'
+        groups: '{{ usuarios[usuario]["grupo"] }}'
+        append: yes
+        generate_ssh_key: '{{ usuarios[usuario]["generar_key"] }}'
+        ssh_key_file: '{{ usuarios[usuario]["ruta_key"] }}'
+        expires: '{{ usuarios[usuario]["expira"] }}'
 
     - name: 'Reinicia los servicios'
       systemd:

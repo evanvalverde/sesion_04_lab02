@@ -1,12 +1,10 @@
 ---
 servicios:
-  # - sshd: no funciona porque el nombre del servicio no coincide con el nombre del paquete a instalar
-  # Paquete: openssh-server
-  # Servicio: sshd
+  - sshd
   - firewalld
   - httpd
-  # Paquete: - mariadb-server
-  # Servicio: mariadb.service
+  - mariadb
+  # El servicio es mariadb, no mariadb-server. Cambiamos el enunciado para que funcione:
 
 usuarios:
   administrador:
@@ -17,10 +15,10 @@ usuarios:
   everis_pruebas:
     grupo: everis
     generar_key: no
-    # uid: 1212 : falta el ruta key y sobre el UID
+    uid: 1212
     expira: 12407987
   nuestro:
-    grupo: "ctic, devops"
+    grupo: ctic, devops
     generar_key: yes
     ruta_key: .ssh/id_rsa
     expira: 122403387
